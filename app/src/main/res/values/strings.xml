@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">LPD ELKOS/Status</string>
+    <string name="app_name">ELKOS/Status</string>
     <string name="title_activity_settings">Settings</string>
 
     <!-- Preference Titles -->
