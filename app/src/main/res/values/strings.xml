@@ -20,8 +20,8 @@
     <string name="Code2">2\nVerfüg-\nbar\nReserve</string>
     <string name="Code3">3\nEinsatz\nange-\nnommen</string>
     <string name="Code4">4\nAm Einsatz-\nort ange-\nkommen</string>
-    <string name="Code5">6\nBereit-\nhalte-\nzeit\n</string>
-    <string name="Code6">7\nDienst-\nende\n\n</string>
+    <string name="Code5">6\nBereit-\nhalte-\nzeit</string>
+    <string name="Code6">7\nDienst-\nende\n</string>
 
     <string name="mCode1">Verfügbar auf Streife</string>
     <string name="mCode2">Verfügbar Reserve</string>

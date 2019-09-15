@@ -1,32 +1,36 @@
 package info.meuse24.elkos_status
 
+
 import android.Manifest
 import android.app.Activity
 import android.graphics.Color
 import android.icu.text.SimpleDateFormat
 import androidx.appcompat.app.AppCompatActivity
-import android.os.Bundle
-import android.os.Parcel
-import android.os.Parcelable
 import android.widget.*
-import java.text.DateFormat
 import java.util.*
-import android.text.TextUtils
-import java.util.Arrays.asList
-import android.content.Context.MODE_PRIVATE
 import android.content.pm.PackageManager
 import android.telephony.SmsManager
-import androidx.core.view.accessibility.AccessibilityEventCompat.setAction
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import android.app.PendingIntent
 import android.content.*
-import android.graphics.drawable.ColorDrawable
+import android.os.*
 import android.view.*
-import java.util.Arrays.parallelPrefix
-import java.util.prefs.Preferences
+import kotlin.IntArray as IntArray1
+import android.telephony.TelephonyManager
+import android.content.Intent
+import android.provider.Settings
+import android.R.attr.start
+import android.media.MediaPlayer
+import androidx.core.app.ComponentActivity.ExtraData
+import androidx.core.content.ContextCompat.getSystemService
+import android.icu.lang.UCharacter.GraphemeClusterBreak.T
+
+
+
 private var PRIVATE_MODE = 0
 private val PREF_NAME = "SETTINGS"
+
 class MainActivity : AppCompatActivity() {
     val MY_PERMISSIONS_REQUEST_SMS = 1225
 
@@ -39,11 +43,37 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var sentPI: PendingIntent
     private lateinit var timeStamps: MyTimeStamps
+    private lateinit var button1: Button
+    private lateinit var button2: Button
+    private lateinit var button3: Button
+    private lateinit var button4: Button
+    private lateinit var button5: Button
+    private lateinit var button6: Button
+    private lateinit var txt_Rufname: String
+    private var colorBtn: Int = 0
+    private var mute:Boolean = false
+
+    fun isSimExists(): Boolean {
+        val telephonyManager = getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager
+        val SIM_STATE = telephonyManager.simState
+
+        if (SIM_STATE == TelephonyManager.SIM_STATE_READY)
+            return true
+        else {
+            // we can inform user about sim state
+            when (SIM_STATE) {
+                TelephonyManager.SIM_STATE_ABSENT, TelephonyManager.SIM_STATE_NETWORK_LOCKED, TelephonyManager.SIM_STATE_PIN_REQUIRED, TelephonyManager.SIM_STATE_PUK_REQUIRED, TelephonyManager.SIM_STATE_UNKNOWN -> {
+                }
+            }
+            return false
+        }
+    }
+
 
     override fun onRequestPermissionsResult(
         requestCode: Int,
         permissions: Array<String>,
-        grantResults: IntArray
+        grantResults: IntArray1
     ) {
         when (requestCode) {
             MY_PERMISSIONS_REQUEST_SMS -> {
@@ -94,7 +124,6 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-
         fun putTimeStamp(st: String) {
             items.add(0, this.getTimeStampString() + ": " + st)
             if (items.size > 40) {
@@ -128,17 +157,28 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onOptionsItemSelected(item: MenuItem?): Boolean {
-        var selectedOpion: String = ""
         when (item?.itemId) {
             R.id.optionen -> {
-                selectedOpion = "Optionen"
+
                 val intent = Intent(this, SettingsActivity::class.java)
                 startActivity(intent)
             }
             R.id.info -> {
-                selectedOpion = "Info"
-                Toast.makeText(this, "ELKOS/STATUS\n(C)2019 G.Meusburger/LPD.V/A1", Toast.LENGTH_SHORT).show()           }
-
+                Toast.makeText(
+                    this,
+                    "ELKOS/STATUS\n(C)2019 Günther Meusburger/LPD.V/A1",
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
+            R.id.toolbar_SMS -> {
+                val defaultApplication =
+                    Settings.Secure.getString(contentResolver, "sms_default_application")
+                val pm = packageManager
+                val intent = pm.getLaunchIntentForPackage(defaultApplication)
+                if (intent != null) {
+                    startActivity(intent)
+                }
+            }
         }
         return super.onOptionsItemSelected(item)
     }
@@ -150,58 +190,49 @@ class MainActivity : AppCompatActivity() {
         val pref = getPreferences(Context.MODE_PRIVATE)
 
         val sharedPref: SharedPreferences = getSharedPreferences(PREF_NAME, PRIVATE_MODE)
-        if (sharedPref.getString("PhoneNumber", "xxx") == "xxx"){
-            val editor =sharedPref.edit()
-            editor.putString("PhoneNumber","+436648457008")
+        if (sharedPref.getString("PhoneNumber", "xxx") == "xxx") {
+            val editor = sharedPref.edit()
+            editor.putString("PhoneNumber", "+436648457008")
+            editor.putString("Rufname", "BREGENZ SEKTOR 1")
+            editor.putBoolean("Mute", false)
             editor.apply()
-            val toast = Toast.makeText(                this,
-                "SMS-Telefonnummer wurde zurückgesetzt. Einstellungen prüfen!",                Toast.LENGTH_SHORT).show()
-
+            Toast.makeText(
+                this,
+                "SMS-Telefonnummer wurde zurückgesetzt. Einstellungen prüfen!",
+                Toast.LENGTH_SHORT
+            ).show()
         }
+        txt_Rufname = sharedPref.getString("Rufname", "BREGENZ SEKTOR 1")
+        mute = sharedPref.getBoolean("Mute", false)
+        val etRufname = findViewById<TextView>(R.id.txt_Rufname)
+        etRufname.text = txt_Rufname
 
         timeStamps = MyTimeStamps(this, pref)
 
         val listView = findViewById<ListView>(R.id.main_listview)
         val adapter = MyCustomAdapter(this, timeStamps)
-
         listView.adapter = adapter
 
         sentPI = PendingIntent.getBroadcast(this, 0, Intent(SENT), 0)
-
-
 
         this.registerReceiver(object : BroadcastReceiver() {
             override fun onReceive(context: Context?, intent: Intent?) {
                 when (resultCode) {
                     Activity.RESULT_OK -> {
-                        val toast = Toast.makeText(
-                            context,
-                            "SMS erfolgreich versendet!",
-                            Toast.LENGTH_SHORT
-                        )
-                        toast.show()
                         timeStamps.putTimeStamp("Nachricht erfolgreich gesendet.")
                         adapter.notifyDataSetChanged()
+                        if (!mute) {
+                            val mp = MediaPlayer.create(applicationContext, R.raw.beep)
+                            mp.start()
+                        }
                     }
 
                     SmsManager.RESULT_ERROR_NO_SERVICE -> {
-                        val toast = Toast.makeText(
-                            context,
-                            "Fehler! Kein aktives Netzwerk für SMS!",
-                            Toast.LENGTH_SHORT
-                        )
-                        toast.show()
                         timeStamps.putTimeStamp("Fehler! Kein aktives Netzwerk für SMS!")
                         adapter.notifyDataSetChanged()
                     }
 
                     SmsManager.RESULT_ERROR_RADIO_OFF -> {
-                        val toast = Toast.makeText(
-                            context,
-                            "Fehler! SMS nicht gesendet!",
-                            Toast.LENGTH_SHORT
-                        )
-                        toast.show()
                         timeStamps.putTimeStamp("Fehler! SMS nicht gesendet!")
                         adapter.notifyDataSetChanged()
                     }
@@ -209,59 +240,116 @@ class MainActivity : AppCompatActivity() {
             }
         }, IntentFilter(SENT))
 
-        val button1 = findViewById<Button>(R.id.button1)
-        val button2 = findViewById<Button>(R.id.button2)
-        val button3 = findViewById<Button>(R.id.button3)
-        val button4 = findViewById<Button>(R.id.button4)
-        val button5 = findViewById<Button>(R.id.button5)
-        val button6 = findViewById<Button>(R.id.button6)
+        button1 = findViewById<Button>(R.id.button1)
+        button2 = findViewById<Button>(R.id.button2)
+        button3 = findViewById<Button>(R.id.button3)
+        button4 = findViewById<Button>(R.id.button4)
+        button5 = findViewById<Button>(R.id.button5)
+        button6 = findViewById<Button>(R.id.button6)
 
+        colorBtn = sharedPref.getInt("colorBtn", 0)
+        setColorBtn(colorBtn)
 
-        button1.setOnClickListener {
+        if (!isSimExists()) {
+            val toast = Toast.makeText(
+                this,
+                "Keine SMS-Funktionalität!",
+                Toast.LENGTH_SHORT
+            )
+            toast.show()
+        }
+
+        button1.setOnLongClickListener {
             if (sendSMS(button1, "1")) {
+                colorBtn = 1
+                setColorBtn(colorBtn)
                 timeStamps.putTimeStamp(getString(R.string.mCode1) + " SMS 1")
                 adapter.notifyDataSetChanged()
             }
+            true
         }
 
-        button2.setOnClickListener {
-            if (sendSMS(button1, "2")) {
+        button2.setOnLongClickListener {
+            if (sendSMS(button2, "2")) {
+                colorBtn = 2
+                setColorBtn(colorBtn)
                 timeStamps.putTimeStamp(getString(R.string.mCode2) + " SMS 2")
                 adapter.notifyDataSetChanged()
-            }            //
+            }
+            true
         }
 
-        button3.setOnClickListener {
-            if (sendSMS(button1, "3")) {
+        button3.setOnLongClickListener {
+            if (sendSMS(button3, "3")) {
+                colorBtn = 3
+                setColorBtn(colorBtn)
                 timeStamps.putTimeStamp(getString(R.string.mCode3) + " SMS 3")
                 adapter.notifyDataSetChanged()
-            }            //
+            }
+            true
         }
 
-        button4.setOnClickListener {
-            if (sendSMS(button1, "4")) {
+        button4.setOnLongClickListener {
+            if (sendSMS(button4, "4")) {
+                colorBtn = 4
+                setColorBtn(colorBtn)
                 timeStamps.putTimeStamp(getString(R.string.mCode4) + " SMS 4")
                 adapter.notifyDataSetChanged()
-            }            //
+            }
+            true
         }
 
-        button5.setOnClickListener {
-            if (sendSMS(button1, "6")) {
+        button5.setOnLongClickListener {
+            if (sendSMS(button5, "6")) {
+                colorBtn = 5
+                setColorBtn(colorBtn)
                 timeStamps.putTimeStamp(getString(R.string.mCode5) + " SMS 6")
                 adapter.notifyDataSetChanged()
-            }            //
+            }
+            true
         }
 
-        button6.setOnClickListener {
-            if (sendSMS(button1, "7")) {
+        button6.setOnLongClickListener {
+            if (sendSMS(button6, "7")) {
+                colorBtn = 6
+                setColorBtn(colorBtn)
                 timeStamps.putTimeStamp(getString(R.string.mCode6) + " SMS 7")
                 adapter.notifyDataSetChanged()
-            }            //
+            }
+            true
         }
-
 
     }
 
+    private fun setColorBtn(btnNr: Int) {
+
+        var c = Array<Int>(7) { 0 }
+        val sharedPref: SharedPreferences = getSharedPreferences(PREF_NAME, PRIVATE_MODE)
+        val editor = sharedPref.edit()
+        editor.putInt("colorBtn", btnNr)
+        editor.apply()
+
+        if (btnNr > 0) {
+            for (i in 1..6) {
+                c[i] = Color.parseColor("#00DDFF")
+                if (i == btnNr) c[i] = Color.RED
+
+            }
+            val vibratorService = getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
+            if (Build.VERSION.SDK_INT >= 26) {
+                vibratorService.vibrate(VibrationEffect.createOneShot(150, 10))
+            } else {
+                vibratorService.vibrate(150)
+            }
+            button1.setBackgroundColor(c[1])
+            button2.setBackgroundColor(c[2])
+            button3.setBackgroundColor(c[3])
+            button4.setBackgroundColor(c[4])
+            button5.setBackgroundColor(c[5])
+            button6.setBackgroundColor(c[6])
+        }
+
+    }
 
     private class MyCustomAdapter(context: Context, ts: MyTimeStamps) : BaseAdapter() {
 
@@ -291,21 +379,26 @@ class MainActivity : AppCompatActivity() {
             val position_textView = rowMain.findViewById<TextView>(R.id.position_textView)
             position_textView.text = mTimeStamp.getStringFromPos(position)
             return rowMain
-
         }
-
-
     }
 
     override fun onResume() {
         super.onResume()
         timeStamps.load()
+        val sharedPref: SharedPreferences = getSharedPreferences(PREF_NAME, PRIVATE_MODE)
+        colorBtn = sharedPref.getInt("colorBtn", 0)
+        setColorBtn(colorBtn)
+        val etRufname = findViewById<TextView>(R.id.txt_Rufname)
+        txt_Rufname = sharedPref.getString("Rufname", "default")
+        mute = sharedPref.getBoolean("Mute", false)
+        etRufname.text = txt_Rufname
     }
 
     override fun onPause() {
         super.onPause()
         timeStamps.save()
     }
+
 
     fun sendSMS(v: View, t: String): Boolean {
         var rOK: Boolean = false
@@ -331,8 +424,6 @@ class MainActivity : AppCompatActivity() {
                 )
                 toast.show()
             } else {
-
-
                 ActivityCompat.requestPermissions(
                     this@MainActivity,
                     arrayOf(Manifest.permission.SEND_SMS),
@@ -343,22 +434,17 @@ class MainActivity : AppCompatActivity() {
                 // app-defined int constant. The callback method gets the
                 // result of the request.
             }
-
-
         } else {
-
-
             val smsManager = SmsManager.getDefault()
-
             var destination = "+4368120261353"
             val text = t
 
-
-            val SENT_SMS_FLAG = "SENT_SMS"
-            val DELIVER_SMS_FLAG = "DELIVER_SMS"
+//            val SENT_SMS_FLAG = "SENT_SMS"
+//            val DELIVER_SMS_FLAG = "DELIVER_SMS"
 
             val sharedPref: SharedPreferences = getSharedPreferences(PREF_NAME, PRIVATE_MODE)
-            destination=(sharedPref.getString("PhoneNumber", "keine SMS-Telefonnummer hinterlegt"))
+            destination =
+                (sharedPref.getString("PhoneNumber", "keine SMS-Telefonnummer hinterlegt"))
 
             smsManager.sendTextMessage(destination, null, text, sentPI, null)
 
