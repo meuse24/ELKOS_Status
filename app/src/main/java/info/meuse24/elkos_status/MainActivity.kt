@@ -119,7 +119,7 @@ class MainActivity : AppCompatActivity() {
             val c = mPref.getInt("Size", 0)
             var i = 0
             while (i < c) {
-                items.add(mPref.getString("l$i", ""))
+                items.add(mPref.getString("l$i", "").toString())
                 i++
             }
         }
@@ -142,7 +142,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         fun getStringFromPos(pos: Int): String {
-            var mReturn: String = ""
+            var mReturn = ""
             if ((pos >= 0) && (pos < items.count())) {
                 mReturn = items.get(pos)
             }
@@ -202,7 +202,7 @@ class MainActivity : AppCompatActivity() {
                 Toast.LENGTH_SHORT
             ).show()
         }
-        txt_Rufname = sharedPref.getString("Rufname", "BREGENZ SEKTOR 1")
+        txt_Rufname = sharedPref.getString("Rufname", "BREGENZ SEKTOR 1").toString()
         mute = sharedPref.getBoolean("Mute", false)
         val etRufname = findViewById<TextView>(R.id.txt_Rufname)
         etRufname.text = txt_Rufname
@@ -389,7 +389,7 @@ class MainActivity : AppCompatActivity() {
         colorBtn = sharedPref.getInt("colorBtn", 0)
         setColorBtn(colorBtn)
         val etRufname = findViewById<TextView>(R.id.txt_Rufname)
-        txt_Rufname = sharedPref.getString("Rufname", "default")
+        txt_Rufname = sharedPref.getString("Rufname", "default").toString()
         mute = sharedPref.getBoolean("Mute", false)
         etRufname.text = txt_Rufname
     }
@@ -444,7 +444,7 @@ class MainActivity : AppCompatActivity() {
 
             val sharedPref: SharedPreferences = getSharedPreferences(PREF_NAME, PRIVATE_MODE)
             destination =
-                (sharedPref.getString("PhoneNumber", "keine SMS-Telefonnummer hinterlegt"))
+                (sharedPref.getString("PhoneNumber", "keine SMS-Telefonnummer hinterlegt").toString())
 
             smsManager.sendTextMessage(destination, null, text, sentPI, null)
 
