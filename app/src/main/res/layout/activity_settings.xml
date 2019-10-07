@@ -69,7 +69,7 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
         android:layout_marginTop="32dp"
-        android:text="Funkrufname speichern"
+        android:text="Einstellungen speichern"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/checkBox_Mute" />
 
@@ -102,5 +102,15 @@
         android:layout_marginTop="16dp"
         android:text="Ton aus"
         app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/editText_Rufname" />
+
+    <CheckBox
+        android:id="@+id/checkBox_Location"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="24dp"
+        android:layout_marginTop="16dp"
+        android:text="Verortung"
+        app:layout_constraintStart_toEndOf="@+id/checkBox_Mute"
         app:layout_constraintTop_toBottomOf="@+id/editText_Rufname" />
 </androidx.constraintlayout.widget.ConstraintLayout>

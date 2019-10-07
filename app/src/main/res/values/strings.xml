@@ -29,5 +29,8 @@
     <string name="mCode4">Am Einsatzort angekommen</string>
     <string name="mCode5">Bereithaltezeit</string>
     <string name="mCode6">Dienstende (nicht verfügbar)</string>
+    <string name="menu_sms">SMS</string>
+    <string name="menu_einstellungen">Einstellungen</string>
+    <string name="menu_export">Export Log PDF</string>
 
 </resources>

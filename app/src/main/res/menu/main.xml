@@ -1,18 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    >
-    <item android:id="@+id/toolbar_SMS"
-        android:icon="@android:drawable/ic_dialog_info"
-        android:title="SMS"
+    xmlns:app="http://schemas.android.com/apk/res-auto"   >
+
+
+    <item
+        android:id="@+id/toolbar_SMS"
+        android:icon="@drawable/ic_action_name"
+        android:title="@string/menu_sms"
         app:showAsAction="ifRoom" />
 
 
     <item
-    android:title="Einstellungen"
-    android:id="@+id/optionen"/>
+        android:id="@+id/optionen"
+        android:title="@string/menu_einstellungen" />
 
-    <item android:title="Info"
-        android:id="@+id/info"/>
+    <item
+        android:id="@+id/toolbar_export"
+        android:title="@string/menu_export" />
+
+    <item
+        android:id="@+id/info"
+        android:title="Info" />
 
 </menu>
