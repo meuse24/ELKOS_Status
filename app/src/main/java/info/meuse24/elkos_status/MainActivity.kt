@@ -259,7 +259,7 @@ class MainActivity : AppCompatActivity() {
                 startActivity(intent)
             }
             R.id.info -> {
-                infoDialog("Info", "ELKOS/Status\n(C) 2019 Günther Meusburger/LPD.V/A1")
+                infoDialog("Info", "ELKOS/Status\n(Copyleft) 2019 Günther Meusburger/LPD.V/A1\nProduced under the GNU Affero General Public License, Sourcecode at: Github meuse24/ELKOS_Status")
             }
             R.id.toolbar_SMS -> {
                 val defaultApplication =
@@ -469,7 +469,6 @@ class MainActivity : AppCompatActivity() {
             }
             true
         }
-
     }
 
     private fun setColorBtn(btnNr: Int, loc: Boolean) {
@@ -506,7 +505,6 @@ class MainActivity : AppCompatActivity() {
             for (i in 1..6) {
                 c[i] = Color.parseColor("#00DDFF")
                 if (i == btnNr) c[i] = Color.RED
-
             }
             if (loc) {
                 val vibratorService = getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
@@ -523,7 +521,6 @@ class MainActivity : AppCompatActivity() {
             button5.setBackgroundColor(c[5])
             button6.setBackgroundColor(c[6])
         }
-
     }
 
     private class MyCustomAdapter(context: Context, ts: MyTimeStamps) : BaseAdapter() {
@@ -546,8 +543,8 @@ class MainActivity : AppCompatActivity() {
         override fun getView(position: Int, convertView: View?, parent: ViewGroup?): View {
             val layoutInflater = LayoutInflater.from(mContext)
             val rowMain = layoutInflater.inflate(R.layout.row_main, parent, false)
-            val position_textView = rowMain.findViewById<TextView>(R.id.position_textView)
-            position_textView.text = mTimeStamp.getStringFromPos(position)
+            val positionTextview = rowMain.findViewById<TextView>(R.id.position_textView)
+            positionTextview.text = mTimeStamp.getStringFromPos(position)
             return rowMain
         }
     }
@@ -598,7 +595,6 @@ class MainActivity : AppCompatActivity() {
                     arrayOf(Manifest.permission.SEND_SMS),
                     MY_PERMISSIONS_REQUEST_SMS
                 )
-
                 // MY_PERMISSIONS_REQUEST_READ_CONTACTS is an
                 // app-defined int constant. The callback method gets the
                 // result of the request.
@@ -607,22 +603,17 @@ class MainActivity : AppCompatActivity() {
             val smsManager = SmsManager.getDefault()
             var destination = "+4368120261353"
             val text = t
-
 //            val SENT_SMS_FLAG = "SENT_SMS"
 //            val DELIVER_SMS_FLAG = "DELIVER_SMS"
-
             val sharedPref: SharedPreferences = getSharedPreferences(PREF_NAME, PRIVATE_MODE)
             destination =
                 (sharedPref.getString(
                     "PhoneNumber",
                     "keine SMS-Telefonnummer hinterlegt"
                 ).toString())
-
             smsManager.sendTextMessage(destination, null, text, sentPI, null)
-
 //            Toast.makeText(v.context, "SMS wird gesendet...", Toast.LENGTH_SHORT).show()
             rOK = true
-
         }
         return rOK
     }
